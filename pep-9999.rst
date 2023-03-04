@@ -1,0 +1,91 @@
+PEP: 9999
+Title: Type Casting Syntax
+Author: Angelo Kontaxis <me@zomatree.live>
+Discussions-To: [TODO]
+Status: Draft
+Type: Standards Track
+Topic: Typing
+Created: 03-Mar-2023
+Post-History: [TODO]
+
+Abstract
+========
+
+:pep:`484` includes the ability to cast between types using `typing.cast`, this PEP proposes a new syntax
+to allow for casting between types, the syntax allows for more intergration with the language and helps
+make typing a first-class feature of python. this reduces requiring to import and use a function and also
+reduces the runtime overhead of calling a no-op function.
+
+Motivation
+==========
+
+`typing.cast` is a function which exists at runtime, this means that the function must be called, however
+at runtime this function doesn't do anything, this is both unintuative and can be costly, currently the
+only way to not affect runtime performance while doing casting is to use `# type: ignore` however this
+disables typing on the entire line and doesnt achieve what `typing.cast` does. Along with the aforementioned
+reasons, similar to :pep:`604` bringing typing features into the core of python helps with the usability and
+adoption of typing.
+
+Specification
+=============
+
+The new cast syntax will be accepted in any expression, using it in annotations is invalid.
+At runtime this will be a no-op and only be used by type checkers.
+
+Usage
+-----
+
+.. code-block:: python
+
+    def find_first_str(a: List[object]) -> str:
+        index = next(i for i, x in enumerate(a) if isinstance(x, str))
+        # We only get here if there's at least one string in a
+        return a[index] as str
+
+
+Syntax Definition
+-----------------
+
+.. code-block:: peg
+
+    cast_expr: expr 'as' type_name
+
+As the keyword `as` already exists in Python this new syntax should not break any existing code.
+
+Backwards Compatibility
+=======================
+
+Existing code can already use this feature with `typing.cast`, new projects will be able to leavage the new syntax.
+
+
+How to Teach This
+=================
+
+New projects should favor this syntax over `typing.cast` if they target new enough python versions.
+People coming from other statically typed languages might already know about syntaxes similar to this,
+Typescript uses the same syntax [#TypescriptSyntax]_ for the same purpose,
+
+Open Issues
+===========
+
+Currently there is no way to access this info at runtime, should there be a function similar to `inspect.get_annotations`
+which allows you to access this data at runtime? Would this affect runtime performance?
+
+Reference Implementation
+========================
+
+The new syntax must be implemented along with the changes to type checkers to support this new feature.
+
+- A reference implemenation for `cpython can be found here <https://github.com/zomatree/cpython/tree/cast-syntax>`__
+- A reference implemenation for `mypy can be found here <https://github.com/zomatree/mypy/tree/cast-syntax>`__
+
+References
+==========
+
+.. [#TypescriptSyntax] https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-assertions
+
+Copyright
+=========
+
+This document is placed in the public domain or under the
+CC0-1.0-Universal license, whichever is more permissive.
